@@ -11,9 +11,14 @@ router.get("/", ensureAuthenticated, (req, res) => {
   Idea.find({ user: req.user.id })
     .sort({ date: "desc" })
     .then((ideas) => {
-      res.render("ideas/index", {
-        ideas: ideas,
-      });
+      res
+        .render("ideas/index", {
+          ideas: ideas,
+        })
+        .catch((err) => {
+          console.log(err);
+          return res.status(400).send(err);
+        });
     });
 });
 
@@ -26,16 +31,21 @@ router.get("/add", ensureAuthenticated, (req, res) => {
 router.get("/edit/:id", ensureAuthenticated, (req, res) => {
   Idea.findOne({
     _id: req.params.id,
-  }).then((idea) => {
-    if (idea.user != req.user.id) {
-      req.flash("error_msg", "Not Authorized");
-      res.redirect("/ideas");
-    } else {
-      res.render("ideas/edit", {
-        idea: idea,
-      });
-    }
-  });
+  })
+    .then((idea) => {
+      if (idea.user != req.user.id) {
+        req.flash("error_msg", "Not Authorized");
+        res.redirect("/ideas");
+      } else {
+        res.render("ideas/edit", {
+          idea: idea,
+        });
+      }
+    })
+    .catch((err) => {
+      console.log(err);
+      return res.status(400).send("Something went wrong");
+    });
 });
 
 // Process Form
