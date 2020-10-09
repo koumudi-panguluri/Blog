@@ -59,38 +59,42 @@ router.post("/register", (req, res) => {
       password2: req.body.password2,
     });
   } else {
-    User.findOne({ email: req.body.email }).then((user) => {
-      if (user) {
-        req.flash("error_msg", "Email already regsitered");
-        res.redirect("/users/register");
-      } else {
-        const newUser = new User({
-          name: req.body.name,
-          email: req.body.email,
-          password: req.body.password,
-        });
-
-        bcrypt.genSalt(10, (err, salt) => {
-          bcrypt.hash(newUser.password, salt, (err, hash) => {
-            if (err) throw err;
-            newUser.password = hash;
-            newUser
-              .save()
-              .then((user) => {
-                req.flash(
-                  "success_msg",
-                  "You are now registered and can log in"
-                );
-                res.redirect("/users/login");
-              })
-              .catch((err) => {
-                console.log(err);
-                return;
-              });
+    User.findOne({ email: req.body.email })
+      .then((user) => {
+        if (user) {
+          req.flash("error_msg", "Email already regsitered");
+          res.redirect("/users/register");
+        } else {
+          const newUser = new User({
+            name: req.body.name,
+            email: req.body.email,
+            password: req.body.password,
           });
-        });
-      }
-    });
+
+          bcrypt.genSalt(10, (err, salt) => {
+            bcrypt.hash(newUser.password, salt, (err, hash) => {
+              if (err) throw err;
+              newUser.password = hash;
+              newUser
+                .save()
+                .then((user) => {
+                  req.flash(
+                    "success_msg",
+                    "You are now registered and can log in"
+                  );
+                  res.redirect("/users/login");
+                })
+                .catch((err) => {
+                  console.log(err);
+                  return;
+                });
+            });
+          });
+        }
+      })
+      .catch((err) => {
+        return res.status(400).send(err);
+      });
   }
 });
 
